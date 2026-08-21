@@ -95,24 +95,32 @@ export default function ChatPanel({
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const selectConversation = useCallback(async (id: string) => {
+  const loadConversation = useCallback(async (id: string) => {
     setError(null);
     try {
       const conv = await getConversation(id);
       await onUpdateTitle(id, conv.title);
-      const messages = conv.messages.map((m) => ({
-        role: m.role as ChatMessage["role"],
-        content: m.content,
-      }));
-      for (const msg of messages) {
-        await onSaveMessage(id, msg.role, msg.content, "", "fastapi");
-      }
-      setMessages(messages);
+      setMessages(
+        conv.messages.map((m) => ({
+          role: m.role as ChatMessage["role"],
+          content: m.content,
+        })),
+      );
       onSelectConversation(id);
     } catch {
       setError("Failed to load conversation");
     }
-  }, [onSelectConversation, onSaveMessage, onUpdateTitle]);
+  }, [onSelectConversation, onUpdateTitle]);
+
+  // Load conversation when activeId changes (e.g. from History ?id= param)
+  useEffect(() => {
+    if (activeId) {
+      loadConversation(activeId);
+    } else {
+      setMessages([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId]);
 
   const newChat = useCallback(async () => {
     setError(null);
