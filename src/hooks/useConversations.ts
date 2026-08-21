@@ -19,7 +19,7 @@ type ConversationSummary = {
   updated_at: string;
 };
 
-type ConversationDetail = {
+export type ConversationDetail = {
   id: string;
   title: string;
   created_at: string;

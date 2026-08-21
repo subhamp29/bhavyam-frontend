@@ -85,7 +85,13 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   Object.assign(headers, authHeaders);
   const res = await fetch(url, { ...init, headers });
   if (!res.ok) {
-    throw new Error(`Request failed (${res.status})`);
+    let body = "";
+    try {
+      body = await res.text();
+    } catch {
+      // ignore body read errors
+    }
+    throw new Error(`Request failed (${res.status}): ${body || res.statusText}`);
   }
   return (await res.json()) as T;
 }

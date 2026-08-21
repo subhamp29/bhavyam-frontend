@@ -33,6 +33,7 @@ export default function Page() {
         onStreamingChange={setIsStreaming}
         onSaveMessage={saveMessage}
         onUpdateTitle={updateTitle}
+        onLoadConversation={selectConversation}
       />
       <TrendingSidebar />
     </div>

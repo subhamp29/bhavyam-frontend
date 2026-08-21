@@ -13,6 +13,8 @@ import MobileSheet from "./MobileSheet";
 import LoginPage from "@/app/login/page";
 import { StreamingProvider, useStreaming } from "@/context/StreamingContext";
 import { KeyboardProvider, useKeyboard } from "@/context/KeyboardContext";
+import { ActiveChatProvider } from "@/context/ActiveChatContext";
+import AuthGuard from "./AuthGuard";
 
 function ShellInner({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -62,7 +64,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <StreamingProvider>
       <KeyboardProvider>
-        <ShellInner>{children}</ShellInner>
+        <ActiveChatProvider>
+          <AuthGuard>
+            <ShellInner>{children}</ShellInner>
+          </AuthGuard>
+        </ActiveChatProvider>
       </KeyboardProvider>
     </StreamingProvider>
   );

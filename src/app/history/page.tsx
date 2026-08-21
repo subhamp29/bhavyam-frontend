@@ -10,11 +10,15 @@ export default function HistoryPage() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getConversations()
       .then(setConversations)
-      .catch(() => setConversations([]))
+      .catch((err) => {
+        console.error("Failed to load conversations:", err);
+        setError(err instanceof Error ? err.message : "Failed to load conversations");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -47,9 +51,15 @@ export default function HistoryPage() {
         />
       </div>
 
+      {error && (
+        <div className="mb-4 rounded-xl border border-accent-red/40 bg-accent-red/10 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 min-h-0">
         {loading && <p className="text-sm text-slate-500">Loading history…</p>}
-        {!loading && filtered.length === 0 && (
+        {!loading && !error && filtered.length === 0 && (
           <p className="text-sm text-slate-500">No conversations found.</p>
         )}
 

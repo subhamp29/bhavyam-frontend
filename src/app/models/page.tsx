@@ -8,11 +8,15 @@ export default function ModelsPage() {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getModels()
       .then(setModels)
-      .catch(() => setModels([]))
+      .catch((err) => {
+        console.error("Failed to load models:", err);
+        setError(err instanceof Error ? err.message : "Failed to load models");
+      })
       .finally(() => setLoading(false));
     setSelectedId(localStorage.getItem("bhavyam.model"));
   }, []);
@@ -26,9 +30,15 @@ export default function ModelsPage() {
     <div className="glass-panel h-full flex flex-col p-6 overflow-hidden min-h-0">
       <h1 className="font-display text-xl font-bold text-white mb-4 shrink-0">Core Models</h1>
 
+      {error && (
+        <div className="mb-4 rounded-xl border border-accent-red/40 bg-accent-red/10 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-3">
         {loading && <p className="text-sm text-slate-500">Loading models…</p>}
-        {!loading && models.length === 0 && (
+        {!loading && !error && models.length === 0 && (
           <p className="text-sm text-slate-500">No models available.</p>
         )}
 

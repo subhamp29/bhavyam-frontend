@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Paperclip, Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
   API_BASE,
-  getConversation,
   getModels,
   streamChat,
   type ConversationSummary,
@@ -14,6 +14,8 @@ import {
 import MessageBubble, { type ChatMessage } from "./MessageBubble";
 import ThinkingIndicator from "./ThinkingIndicator";
 import { useKeyboard } from "@/context/KeyboardContext";
+import { useActiveChat } from "@/context/ActiveChatContext";
+import type { ConversationDetail } from "@/hooks/useConversations";
 
 type ChatPanelProps = {
   conversations: ConversationSummary[];
@@ -26,6 +28,7 @@ type ChatPanelProps = {
   onStreamingChange: (v: boolean) => void;
   onSaveMessage: (conversationId: string, role: "user" | "assistant" | "system", content: string, model: string, backend: string) => Promise<void>;
   onUpdateTitle: (conversationId: string, title: string) => Promise<void>;
+  onLoadConversation: (id: string) => Promise<ConversationDetail | null>;
 };
 
 export default function ChatPanel({
@@ -39,10 +42,10 @@ export default function ChatPanel({
   onStreamingChange,
   onSaveMessage,
   onUpdateTitle,
+  onLoadConversation,
 }: ChatPanelProps) {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string>("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -52,6 +55,8 @@ export default function ChatPanel({
   const inputRef = useRef<HTMLInputElement>(null);
   const modelSelectorRef = useRef<HTMLDivElement>(null);
   const { setInputFocused } = useKeyboard();
+  const { messages, setMessages, activeConversationId, setActiveConversationId } = useActiveChat();
+  const router = useRouter();
 
   // Load models
   useEffect(() => {
@@ -98,19 +103,25 @@ export default function ChatPanel({
   const loadConversation = useCallback(async (id: string) => {
     setError(null);
     try {
-      const conv = await getConversation(id);
+      const conv = await onLoadConversation(id);
+      if (!conv) {
+        setError("Conversation not found");
+        return;
+      }
       await onUpdateTitle(id, conv.title);
       setMessages(
-        conv.messages.map((m) => ({
-          role: m.role as ChatMessage["role"],
-          content: m.content,
-        })),
+        conv.messages
+          .filter((m: { role: string }) => m.role === "user" || m.role === "assistant")
+          .map((m: { role: string; content: string }) => ({
+            role: m.role as ChatMessage["role"],
+            content: m.content,
+          })),
       );
-      onSelectConversation(id);
+      setActiveConversationId(id);
     } catch {
       setError("Failed to load conversation");
     }
-  }, [onSelectConversation, onUpdateTitle]);
+  }, [onLoadConversation, onUpdateTitle]);
 
   // Load conversation when activeId changes (e.g. from History ?id= param)
   useEffect(() => {
@@ -127,25 +138,29 @@ export default function ChatPanel({
     setMessages([]);
     try {
       const id = await onNewChat();
+      setActiveConversationId(id);
+      router.replace(`/?id=${id}`, { scroll: false });
       onSelectConversation(id);
     } catch {
       setError("Failed to create conversation");
     }
-  }, [onSelectConversation, onNewChat]);
+  }, [onSelectConversation, onNewChat, setActiveConversationId, router]);
 
   const handleDelete = useCallback(
     async (id: string) => {
       try {
         await onDeleteConversation(id);
-        if (activeId === id) {
+        if (activeConversationId === id) {
           setMessages([]);
+          setActiveConversationId(null);
+          router.replace("/", { scroll: false });
         }
         await onRefreshConversations();
       } catch {
         setError("Failed to delete conversation");
       }
     },
-    [activeId, onDeleteConversation, onRefreshConversations],
+    [activeConversationId, onDeleteConversation, onRefreshConversations, setActiveConversationId, router],
   );
 
   const handleSend = useCallback(async () => {
@@ -154,7 +169,14 @@ export default function ChatPanel({
     setInput("");
     setError(null);
     setTokenCount(null);
-    const convId = activeId ?? "";
+
+    let convId = activeConversationId;
+    if (!convId) {
+      convId = await onNewChat();
+      setActiveConversationId(convId);
+      router.replace(`/?id=${convId}`, { scroll: false });
+    }
+
     onStreamingChange(true);
 
     setMessages((prev) => [
@@ -173,7 +195,6 @@ export default function ChatPanel({
     }
 
     let acc = "";
-    let finalConvId = convId;
     try {
       for await (const ev of streamChat({
         conversation_id: convId,
@@ -192,25 +213,26 @@ export default function ChatPanel({
             return copy;
           });
         }
-        if (ev.conversation_id) finalConvId = ev.conversation_id;
         if (ev.done) {
-          onSelectConversation(finalConvId);
+          setActiveConversationId(convId);
+          router.replace(`/?id=${convId}`, { scroll: false });
+          onSelectConversation(convId);
           await onRefreshConversations();
 
           // Persist assistant message to Supabase if available
-          if (onSaveMessage && finalConvId) {
+          if (onSaveMessage && convId) {
             try {
-              await onSaveMessage(finalConvId, "assistant", acc, selectedModelId, "fastapi");
+              await onSaveMessage(convId, "assistant", acc, selectedModelId, "fastapi");
             } catch {
               // ignore
             }
           }
 
           // Auto-title new conversations from first user message
-          if (onUpdateTitle && messages.length === 0 && finalConvId) {
+          if (onUpdateTitle && messages.length === 0 && convId) {
             try {
               const title = text.slice(0, 40) + (text.length > 40 ? "..." : "");
-              await onUpdateTitle(finalConvId, title);
+              await onUpdateTitle(convId, title);
               await onRefreshConversations();
             } catch {
               // ignore
@@ -218,14 +240,16 @@ export default function ChatPanel({
           }
 
           try {
-            const conv = await getConversation(finalConvId);
-            setMessages(
-              conv.messages.map((m) =>
-                m.role === "assistant" && m.content === ""
-                  ? { role: "assistant", content: acc }
-                  : { role: m.role as ChatMessage["role"], content: m.content },
-              ),
-            );
+            const conv = await onLoadConversation(convId);
+            if (conv) {
+              setMessages(
+                conv.messages.map((m: { role: string; content: string }) =>
+                  m.role === "assistant" && m.content === ""
+                    ? { role: "assistant", content: acc }
+                    : { role: m.role as ChatMessage["role"], content: m.content },
+                ),
+              );
+            }
           } catch {
             // keep locally accumulated text
           }
@@ -267,7 +291,7 @@ export default function ChatPanel({
         ),
       );
     }
-  }, [input, isStreaming, selectedModelId, activeId, onStreamingChange, onSelectConversation, onRefreshConversations, onSaveMessage, onUpdateTitle, messages.length]);
+  }, [input, isStreaming, selectedModelId, activeConversationId, onStreamingChange, onSelectConversation, onRefreshConversations, onSaveMessage, onUpdateTitle, messages.length, onLoadConversation, onNewChat, setActiveConversationId, router]);
 
   const onInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
