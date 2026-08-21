@@ -108,7 +108,10 @@ export async function saveSupabaseMessage(
     backend,
   } as any);
 
-  if (error) throw error;
+  if (error) {
+    console.error("❌ Supabase insert failed:", error);
+    throw error;
+  }
 }
 
 export async function updateSupabaseConversationTitle(

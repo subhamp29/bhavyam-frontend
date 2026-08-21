@@ -187,7 +187,7 @@ export default function ChatPanel({
     // Persist user message to Supabase if available
     if (onSaveMessage && convId) {
       try {
-        await onSaveMessage(convId, "user", text, selectedModelId, "fastapi");
+        await onSaveMessage(convId, "user", text, selectedModelId, "remote");
       } catch (err) {
         console.error("Failed to save user message:", err);
       }
@@ -221,7 +221,7 @@ export default function ChatPanel({
           // Persist assistant message to Supabase if available
           if (onSaveMessage && convId) {
             try {
-              await onSaveMessage(convId, "assistant", acc, selectedModelId, "fastapi");
+                  await onSaveMessage(convId, "assistant", acc, selectedModelId, "remote");
             } catch (err) {
               console.error("Failed to save assistant message:", err);
             }

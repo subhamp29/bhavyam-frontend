@@ -145,8 +145,15 @@ export async function* streamChat(payload: {
 
   if (!res.ok) {
     const body = await res.text();
+
+    console.error("❌ Chat API failed:", {
+      status: res.status,
+      statusText: res.statusText,
+      body,
+    });
+
     throw new Error(
-      `Chat request failed (${res.status}): ${body}`
+      `Chat request failed (${res.status}): ${body || res.statusText}`
     );
   }
 
