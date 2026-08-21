@@ -24,7 +24,16 @@ const navItems = [
 export default function StatsPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const handler = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -50,6 +59,43 @@ export default function StatsPanel() {
       ? `${avgMs}ms`
       : "—"
     : "—";
+
+  const mobileRows = [
+    { label: "TOTAL REQUESTS", value: loading ? "..." : stats?.total_messages ?? 0, color: "text-accent-blue" },
+    { label: "MODEL LATENCY", value: loading ? "..." : latencyText, color: "text-cyan-400" },
+    { label: "STORAGE USAGE", value: loading ? "..." : stats?.db_size_mb != null ? `${stats.db_size_mb} MB` : "—", color: "text-accent-purple" },
+  ];
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col min-h-0">
+        <nav className="space-y-1 p-4 shrink-0">
+          {navItems.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-item w-full text-left ${active ? "active" : ""}`}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 custom-scrollbar">
+          {mobileRows.map((row) => (
+            <div key={row.label} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+              <span className="text-xs text-slate-400 tracking-wide">{row.label}</span>
+              <span className={`text-lg font-bold ${row.color}`}>{row.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-0">

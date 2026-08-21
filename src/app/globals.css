@@ -53,6 +53,27 @@ body {
     radial-gradient(52rem 42rem at -8% 112%, rgba(34, 211, 238, 0.12), transparent 60%);
 }
 
+@media (max-width: 1023px) {
+  .glass-panel {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-width: 1px;
+    box-shadow: none;
+  }
+
+  .glass-panel:hover {
+    box-shadow: none;
+  }
+
+  .app-glow::before {
+    opacity: 0.35;
+  }
+
+  .nav-item.active {
+    box-shadow: none;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

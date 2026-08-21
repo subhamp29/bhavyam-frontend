@@ -276,14 +276,14 @@ export default function ChatPanel({
   return (
     <main className="glass-panel flex flex-col h-full overflow-hidden min-h-0 pb-0 lg:pb-0">
       {/* Chat Header */}
-      <header className="px-7 py-4 border-b border-accent-blue/20 flex items-center justify-between bg-blue-950/20 shrink-0">
+      <header className="px-4 py-3 lg:px-7 lg:py-4 border-b border-accent-blue/20 flex items-center justify-between bg-blue-950/20 shrink-0">
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-accent-blue/15 flex items-center justify-center border border-accent-blue/30 text-accent-blue">
-            <span className="text-lg">✨</span>
+          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-accent-blue/15 flex items-center justify-center border border-accent-blue/30 text-accent-blue">
+            <span className="text-base lg:text-lg">✨</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-lg text-white tracking-tight">
+              <h3 className="font-extrabold text-base lg:text-lg text-white tracking-tight">
                 Neural Link Active
               </h3>
               {/* Model selector dropdown */}
@@ -291,10 +291,10 @@ export default function ChatPanel({
                 <button
                   type="button"
                   onClick={() => setModelSelectorOpen((o) => !o)}
-                  className="flex items-center gap-1.5 rounded-lg border border-accent-purple/30 bg-accent-purple/10 px-2.5 py-1 text-[10px] font-mono font-bold uppercase text-blue-300 hover:border-accent-blue/50 hover:bg-accent-blue/15 transition-all"
+                  className="flex items-center gap-1.5 rounded-lg border border-accent-purple/30 bg-accent-purple/10 px-2 py-0.5 lg:px-2.5 lg:py-1 text-[9px] lg:text-[10px] font-mono font-bold uppercase text-blue-300 hover:border-accent-blue/50 hover:bg-accent-blue/15 transition-all truncate max-w-[120px] lg:max-w-none"
                 >
                   {selectedModel?.display_name ?? "Select model"}
-                  <ChevronDown size={12} className="text-blue-300" />
+                  <ChevronDown size={10} className="lg:size-3 text-blue-300 shrink-0" />
                 </button>
                 {modelSelectorOpen && (
                   <div className="absolute left-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-hairline bg-panel-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]">
@@ -338,7 +338,8 @@ export default function ChatPanel({
                 )}
               </div>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            {/* Subtitle: desktop-only, decorative flavor text */}
+            <p className="hidden lg:block text-sm text-slate-400 mt-0.5">
               High-throughput quantum vector matrix operational
             </p>
           </div>
@@ -419,8 +420,8 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Preset Chips */}
-      <div className="px-4 py-2 lg:px-7 border-t border-accent-blue/10 flex items-center gap-2 overflow-x-auto bg-slate-950/40 shrink-0">
+      {/* Preset Chips — desktop-only to save mobile vertical space */}
+      <div className="hidden lg:flex px-7 py-2 border-t border-accent-blue/10 items-center gap-2 overflow-x-auto bg-slate-950/40 shrink-0">
         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest shrink-0">
           Presets:
         </span>
