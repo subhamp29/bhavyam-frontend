@@ -276,7 +276,7 @@ export default function ChatPanel({
   const selectedModel = models.find((m) => m.id === selectedModelId);
 
   return (
-    <main className="glass-panel flex flex-col h-full overflow-hidden min-h-0 pb-0 lg:pb-0">
+    <main className="glass-panel flex flex-col h-full overflow-y-auto lg:overflow-hidden min-h-0 pb-0 lg:pb-0">
       {/* Chat Header */}
       <header className="px-4 py-3 lg:px-7 lg:py-4 border-b border-accent-blue/20 flex items-center justify-between bg-blue-950/20 shrink-0">
         <div className="flex items-center gap-3.5">

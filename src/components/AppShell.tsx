@@ -35,11 +35,11 @@ function ShellInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-bg-dark flex flex-col">
+    <div className="h-screen h-[100dvh] w-screen overflow-y-auto lg:overflow-hidden bg-bg-dark flex flex-col">
       <ParticleBackground isStreaming={isStreaming} />
       <Header onToggleSheet={() => setSheetOpen((o) => !o)} sheetOpen={sheetOpen} />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)] gap-5 p-5 pb-0 lg:pb-5 overflow-hidden min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)] gap-5 p-5 pb-20 lg:pb-5 overflow-y-auto lg:overflow-hidden min-h-0">
         <StatsSidebar />
         {children}
       </div>
