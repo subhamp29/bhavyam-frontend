@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Paperclip, Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe } from "lucide-react";
+import { Paperclip, Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
   API_BASE,
   getModels,
   streamChat,
-  type ConversationSummary,
   type ModelInfo,
 } from "@/lib/api";
 import MessageBubble, { type ChatMessage } from "./MessageBubble";
@@ -18,7 +17,6 @@ import { useActiveChat } from "@/context/ActiveChatContext";
 import type { ConversationDetail } from "@/hooks/useConversations";
 
 type ChatPanelProps = {
-  conversations: ConversationSummary[];
   activeId: string | null;
   onSelectConversation: (id: string) => void;
   onNewChat: () => Promise<string>;
@@ -29,10 +27,10 @@ type ChatPanelProps = {
   onSaveMessage: (conversationId: string, role: "user" | "assistant" | "system", content: string, model: string, backend: string) => Promise<void>;
   onUpdateTitle: (conversationId: string, title: string) => Promise<void>;
   onLoadConversation: (id: string) => Promise<ConversationDetail | null>;
+  onOpenSidebar?: () => void;
 };
 
 export default function ChatPanel({
-  conversations,
   activeId,
   onSelectConversation,
   onNewChat,
@@ -43,6 +41,7 @@ export default function ChatPanel({
   onSaveMessage,
   onUpdateTitle,
   onLoadConversation,
+  onOpenSidebar,
 }: ChatPanelProps) {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string>("");
@@ -108,7 +107,6 @@ export default function ChatPanel({
         setError("Conversation not found");
         return;
       }
-      await onUpdateTitle(id, conv.title);
       setMessages(
         conv.messages
           .filter((m: { role: string }) => m.role === "user" || m.role === "assistant")
@@ -121,7 +119,7 @@ export default function ChatPanel({
     } catch {
       setError("Failed to load conversation");
     }
-  }, [onLoadConversation, onUpdateTitle]);
+  }, [onLoadConversation]);
 
   // Load conversation when activeId changes (e.g. from History ?id= param)
   useEffect(() => {
@@ -189,8 +187,8 @@ export default function ChatPanel({
     if (onSaveMessage && convId) {
       try {
         await onSaveMessage(convId, "user", text, selectedModelId, "fastapi");
-      } catch {
-        // ignore persistence errors
+      } catch (err) {
+        console.error("Failed to save user message:", err);
       }
     }
 
@@ -223,8 +221,8 @@ export default function ChatPanel({
           if (onSaveMessage && convId) {
             try {
               await onSaveMessage(convId, "assistant", acc, selectedModelId, "fastapi");
-            } catch {
-              // ignore
+            } catch (err) {
+              console.error("Failed to save assistant message:", err);
             }
           }
 
@@ -237,21 +235,6 @@ export default function ChatPanel({
             } catch {
               // ignore
             }
-          }
-
-          try {
-            const conv = await onLoadConversation(convId);
-            if (conv) {
-              setMessages(
-                conv.messages.map((m: { role: string; content: string }) =>
-                  m.role === "assistant" && m.content === ""
-                    ? { role: "assistant", content: acc }
-                    : { role: m.role as ChatMessage["role"], content: m.content },
-                ),
-              );
-            }
-          } catch {
-            // keep locally accumulated text
           }
         }
         if (ev.error) {
@@ -312,6 +295,15 @@ export default function ChatPanel({
       {/* Chat Header */}
       <header className="px-4 py-3 lg:px-7 lg:py-4 border-b border-accent-blue/20 flex items-center justify-between bg-blue-950/20 shrink-0">
         <div className="flex items-center gap-3.5">
+          {onOpenSidebar && (
+            <button
+              onClick={onOpenSidebar}
+              className="lg:hidden rounded-lg p-2 text-muted hover:bg-white/5"
+              aria-label="Open conversations"
+            >
+              <Menu size={18} />
+            </button>
+          )}
           <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-accent-blue/15 flex items-center justify-center border border-accent-blue/30 text-accent-blue">
             <span className="text-base lg:text-lg">✨</span>
           </div>

@@ -80,7 +80,7 @@ export function useConversations() {
     model: string,
     backend: string,
   ) => {
-    if (!user) return;
+    if (!user) throw new Error("Not authenticated: cannot save message");
     await saveSupabaseMessage(user.id, conversationId, role, content, model, backend);
   };
 
