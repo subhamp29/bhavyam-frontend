@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   getSupabaseConversations,
-  getSupabaseConversation,
   createSupabaseConversation,
   deleteSupabaseConversation,
   saveSupabaseMessage,
   updateSupabaseConversationTitle,
 } from "@/lib/supabaseData";
+import { getConversation } from "@/lib/api";
 
 type ConversationSummary = {
   id: string;
@@ -53,11 +53,11 @@ export function useConversations() {
   }, [user]);
 
   const selectConversation = async (id: string) => {
-    if (!user) return null;
     try {
-      return await getSupabaseConversation(user.id, id);
-    } catch {
-      return null;
+      return await getConversation(id);
+    } catch (error) {
+      console.error("Failed to load conversation:", error);
+      throw error;
     }
   };
 

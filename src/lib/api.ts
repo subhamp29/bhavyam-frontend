@@ -26,7 +26,10 @@ export interface ConversationDetail {
   id: string;
   title: string;
   created_at: string;
-  messages: { role: string; content: string }[];
+  messages: {
+    role: "user" | "assistant" | "system";
+    content: string;
+  }[];
 }
 
 // SSE event shapes streamed by POST /api/chat.

@@ -114,10 +114,15 @@ export default function ChatPanel({
           })),
       );
       setActiveConversationId(id);
-    } catch {
-      setError("Failed to load conversation");
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load conversation",
+      );
     }
-  }, [onLoadConversation]);
+  }, [onLoadConversation, setMessages, setActiveConversationId]);
 
   // Load conversation when activeId changes (e.g. from History ?id= param)
   useEffect(() => {

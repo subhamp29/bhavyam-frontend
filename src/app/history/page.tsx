@@ -28,7 +28,7 @@ export default function HistoryPage() {
     setConversations((prev) => prev.filter((c) => c.id !== id));
   };
 
-  const handleOpen = (id: string) => router.push(`/?id=${id}`);
+  const handleOpen = (id: string) => router.push(`/?id=${encodeURIComponent(id)}`);
 
   const filtered = conversations.filter((c) =>
     c.title.toLowerCase().includes(query.toLowerCase())
