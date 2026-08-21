@@ -12,17 +12,19 @@ import MobileTabBar from "./MobileTabBar";
 import MobileSheet from "./MobileSheet";
 import LoginPage from "@/app/login/page";
 import { StreamingProvider, useStreaming } from "@/context/StreamingContext";
+import { KeyboardProvider, useKeyboard } from "@/context/KeyboardContext";
 
 function ShellInner({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [tabBarOpen, setTabBarOpen] = useState(false);
   const { isStreaming } = useStreaming();
+  const { inputFocused } = useKeyboard();
   const pathname = usePathname();
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-bg-dark">
+      <div className="h-screen h-[100dvh] w-screen flex items-center justify-center bg-bg-dark">
         <div className="text-accent-blue text-sm animate-pulse">Loading...</div>
       </div>
     );
@@ -33,7 +35,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-bg-dark flex flex-col">
+    <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-bg-dark flex flex-col">
       <ParticleBackground isStreaming={isStreaming} />
       <Header onToggleSheet={() => setSheetOpen((o) => !o)} sheetOpen={sheetOpen} />
 
@@ -42,7 +44,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
         {children}
       </div>
 
-      <MobileTabBar open={tabBarOpen} onToggle={() => setTabBarOpen((o) => !o)} />
+      <MobileTabBar open={tabBarOpen} onToggle={() => setTabBarOpen((o) => !o)} inputFocused={inputFocused} />
 
       <MobileSheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <StatsPanel />
@@ -59,7 +61,9 @@ function ShellInner({ children }: { children: React.ReactNode }) {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <StreamingProvider>
-      <ShellInner>{children}</ShellInner>
+      <KeyboardProvider>
+        <ShellInner>{children}</ShellInner>
+      </KeyboardProvider>
     </StreamingProvider>
   );
 }

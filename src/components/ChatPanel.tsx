@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import MessageBubble, { type ChatMessage } from "./MessageBubble";
 import ThinkingIndicator from "./ThinkingIndicator";
+import { useKeyboard } from "@/context/KeyboardContext";
 
 type ChatPanelProps = {
   conversations: ConversationSummary[];
@@ -50,6 +51,7 @@ export default function ChatPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const modelSelectorRef = useRef<HTMLDivElement>(null);
+  const { setInputFocused } = useKeyboard();
 
   // Load models
   useEffect(() => {
@@ -457,6 +459,13 @@ export default function ChatPanel({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onInputKeyDown}
+            onFocus={() => {
+              setInputFocused(true);
+              setTimeout(() => {
+                inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }, 300);
+            }}
+            onBlur={() => setInputFocused(false)}
             placeholder="Type your neural prompt instruction..."
             className="input-field font-sans"
             disabled={isStreaming}

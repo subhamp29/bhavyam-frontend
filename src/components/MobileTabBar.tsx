@@ -14,9 +14,10 @@ const tabs = [
 type MobileTabBarProps = {
   open: boolean;
   onToggle: () => void;
+  inputFocused?: boolean;
 };
 
-export default function MobileTabBar({ open, onToggle }: MobileTabBarProps) {
+export default function MobileTabBar({ open, onToggle, inputFocused }: MobileTabBarProps) {
   const pathname = usePathname();
 
   return (
@@ -36,7 +37,7 @@ export default function MobileTabBar({ open, onToggle }: MobileTabBarProps) {
       {/* Tab bar */}
       <nav
         className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch border-t border-accent-blue/20 bg-blue-950/80 backdrop-blur-md pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${
-          open ? "translate-y-0" : "translate-y-full"
+          open && !inputFocused ? "translate-y-0" : "translate-y-full"
         }`}
       >
         {tabs.map((tab) => {
