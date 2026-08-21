@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   getSupabaseConversations,
@@ -31,7 +31,7 @@ export function useConversations() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) {
       setConversations([]);
       setLoading(false);
@@ -46,34 +46,34 @@ export function useConversations() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     refresh();
-  }, [user]);
+  }, [refresh]);
 
-  const selectConversation = async (id: string) => {
+  const selectConversation = useCallback(async (id: string) => {
     try {
       return await getConversation(id);
     } catch (error) {
       console.error("Failed to load conversation:", error);
       throw error;
     }
-  };
+  }, []);
 
-  const createConversation = async () => {
+  const createConversation = useCallback(async () => {
     if (!user) throw new Error("Not authenticated");
     const { id } = await createSupabaseConversation(user.id);
     return id;
-  };
+  }, [user]);
 
-  const deleteConversation = async (id: string) => {
+  const deleteConversation = useCallback(async (id: string) => {
     if (!user) return;
     await deleteSupabaseConversation(user.id, id);
     await refresh();
-  };
+  }, [user, refresh]);
 
-  const saveMessage = async (
+  const saveMessage = useCallback(async (
     conversationId: string,
     role: "user" | "assistant" | "system",
     content: string,
@@ -82,12 +82,12 @@ export function useConversations() {
   ) => {
     if (!user) throw new Error("Not authenticated: cannot save message");
     await saveSupabaseMessage(user.id, conversationId, role, content, model, backend);
-  };
+  }, [user]);
 
-  const updateTitle = async (conversationId: string, title: string) => {
+  const updateTitle = useCallback(async (conversationId: string, title: string) => {
     if (!user) return;
     await updateSupabaseConversationTitle(user.id, conversationId, title);
-  };
+  }, [user]);
 
   return {
     conversations,

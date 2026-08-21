@@ -128,15 +128,13 @@ export default function ChatPanel({
   useEffect(() => {
     if (activeId) {
       loadConversation(activeId);
-    } else {
-      setMessages([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeId]);
+  }, [activeId, loadConversation]);
 
   const newChat = useCallback(async () => {
     setError(null);
     setMessages([]);
+    setActiveConversationId(null);
     try {
       const id = await onNewChat();
       setActiveConversationId(id);
