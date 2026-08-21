@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import { getTrending } from "@/lib/api";
 
-type Topic = { label: string; count: number };
+type Topic = { label: string; traffic?: string | null };
 
 export default function TrendingPanel() {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -21,7 +21,7 @@ export default function TrendingPanel() {
     <div className="flex flex-col min-h-0">
       <div className="flex items-center justify-between mb-4 shrink-0">
         <h2 className="font-display text-xs font-bold tracking-widest text-accent-purple">
-          TRENDING TOPICS
+          TRENDING IN INDIA
         </h2>
         <TrendingUp size={16} className="text-accent-blue" />
       </div>
@@ -30,9 +30,7 @@ export default function TrendingPanel() {
         {loading && <p className="text-sm text-slate-500">Loading trends…</p>}
 
         {!loading && topics.length === 0 && (
-          <p className="text-sm text-slate-500">
-            Not enough data yet — trends will appear as you chat.
-          </p>
+          <p className="text-sm text-slate-500">Couldn't load trends right now.</p>
         )}
 
         {topics.map((topic, i) => (
@@ -44,7 +42,9 @@ export default function TrendingPanel() {
               <span className="text-sm font-medium text-white truncate pr-2">
                 {i + 1}. {topic.label}
               </span>
-              <span className="text-xs text-accent-blue shrink-0">{topic.count}×</span>
+              {topic.traffic && (
+                <span className="text-xs text-accent-blue shrink-0">{topic.traffic}</span>
+              )}
             </div>
           </div>
         ))}

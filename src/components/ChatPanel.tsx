@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Paperclip, Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe, Menu } from "lucide-react";
+import { Paperclip, Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
@@ -27,7 +27,6 @@ type ChatPanelProps = {
   onSaveMessage: (conversationId: string, role: "user" | "assistant" | "system", content: string, model: string, backend: string) => Promise<void>;
   onUpdateTitle: (conversationId: string, title: string) => Promise<void>;
   onLoadConversation: (id: string) => Promise<ConversationDetail | null>;
-  onOpenSidebar?: () => void;
 };
 
 export default function ChatPanel({
@@ -41,7 +40,6 @@ export default function ChatPanel({
   onSaveMessage,
   onUpdateTitle,
   onLoadConversation,
-  onOpenSidebar,
 }: ChatPanelProps) {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string>("");
@@ -295,15 +293,6 @@ export default function ChatPanel({
       {/* Chat Header */}
       <header className="px-4 py-3 lg:px-7 lg:py-4 border-b border-accent-blue/20 flex items-center justify-between bg-blue-950/20 shrink-0">
         <div className="flex items-center gap-3.5">
-          {onOpenSidebar && (
-            <button
-              onClick={onOpenSidebar}
-              className="lg:hidden rounded-lg p-2 text-muted hover:bg-white/5"
-              aria-label="Open conversations"
-            >
-              <Menu size={18} />
-            </button>
-          )}
           <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-accent-blue/15 flex items-center justify-center border border-accent-blue/30 text-accent-blue">
             <span className="text-base lg:text-lg">✨</span>
           </div>

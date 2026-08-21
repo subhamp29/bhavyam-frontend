@@ -191,7 +191,7 @@ export const getStats = () =>
   jsonFetch<StatsResponse>(`${API_BASE}/api/stats`);
 
 export interface TrendingResponse {
-  topics: { label: string; count: number }[];
+  topics: { label: string; traffic?: string | null }[];
 }
 
 export const getTrending = (limit = 6) =>
