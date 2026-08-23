@@ -50,6 +50,7 @@ export default function ChatPanel({
   const [tokenCount, setTokenCount] = useState<number | null>(null);
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFileText, setSelectedFileText] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const modelSelectorRef = useRef<HTMLDivElement>(null);
@@ -205,6 +206,8 @@ export default function ChatPanel({
         conversation_id: convId,
         message: text,
         model_id: selectedModelId,
+        file_text: selectedFileText,
+        file_name: selectedFile?.name ?? null,
       })) {
         if (ev.delta) {
           acc += ev.delta;
@@ -287,6 +290,8 @@ export default function ChatPanel({
           i === prev.length - 1 ? { ...m, streaming: false } : m,
         ),
       );
+      setSelectedFile(null);
+      setSelectedFileText(null);
     }
   }, [input, isStreaming, selectedModelId, activeConversationId, onStreamingChange, onSelectConversation, onRefreshConversations, onSaveMessage, onUpdateTitle, messages.length, onLoadConversation, onNewChat, setActiveConversationId, router]);
 
@@ -304,6 +309,29 @@ export default function ChatPanel({
 
   const handleFileSelected = (file: File) => {
     setSelectedFile(file);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        setSelectedFileText(result);
+      } else {
+        // Binary file (PDF, image, etc.) — convert to base64 for backend processing
+        const base64 = btoa(
+          new Uint8Array(result).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ""
+          )
+        );
+        setSelectedFileText(base64);
+      }
+    };
+
+    if (file.type.startsWith("text/") || file.name.endsWith(".txt") || file.name.endsWith(".md")) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
 
     console.log("Selected file:", {
       name: file.name,

@@ -44,6 +44,8 @@ export interface ChatEvent {
   model_id?: string;
   response_ms?: number;
   token_count?: number;
+  file_text?: string | null;
+  file_name?: string | null;
 }
 
 export interface StatsResponse {
@@ -126,6 +128,8 @@ export async function* streamChat(payload: {
   conversation_id: string;
   message: string;
   model_id: string;
+  file_text?: string | null;
+  file_name?: string | null;
 }): AsyncGenerator<ChatEvent> {
   const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/api/chat`, {
@@ -142,6 +146,8 @@ export async function* streamChat(payload: {
       temperature: 0.7,
       top_p: 0.95,
       max_tokens: 512,
+      file_text: payload.file_text ?? null,
+      file_name: payload.file_name ?? null,
     }),
   });
 
