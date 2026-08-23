@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LayoutDashboard, History, Cpu, Sliders } from "lucide-react";
+import { ChevronDown, LayoutDashboard, History, Cpu, Sliders, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,9 +15,10 @@ type MobileTabBarProps = {
   open: boolean;
   onToggle: () => void;
   inputFocused?: boolean;
+  onLogout?: () => void;
 };
 
-export default function MobileTabBar({ open, onToggle, inputFocused }: MobileTabBarProps) {
+export default function MobileTabBar({ open, onToggle, inputFocused, onLogout }: MobileTabBarProps) {
   const pathname = usePathname();
 
   return (
@@ -56,6 +57,17 @@ export default function MobileTabBar({ open, onToggle, inputFocused }: MobileTab
             </Link>
           );
         })}
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] text-red-400"
+            aria-label="Logout"
+          >
+            <LogOut size={20} strokeWidth={2} />
+            <span>Logout</span>
+          </button>
+        )}
       </nav>
     </>
   );

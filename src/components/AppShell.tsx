@@ -58,38 +58,36 @@ function ShellInner({ children }: { children: React.ReactNode }) {
         {children}
       </div>
 
-      <MobileTabBar open={tabBarOpen} onToggle={() => setTabBarOpen((o) => !o)} inputFocused={inputFocused} />
+      <MobileTabBar open={tabBarOpen} onToggle={() => setTabBarOpen((o) => !o)} inputFocused={inputFocused} onLogout={handleLogout} />
 
       <MobileSheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-red-500 transition hover:bg-red-500/10"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Logout</span>
+        </button>
         <StatsPanel />
         {pathname === "/" && (
           <div className="mt-6 pt-6 border-t border-accent-blue/10">
             <TrendingPanel />
           </div>
         )}
-        <div className="mt-6 pt-6 border-t border-accent-blue/10">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-red-500 transition hover:bg-red-500/10"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            <span>Logout</span>
-          </button>
-        </div>
       </MobileSheet>
     </div>
   );
