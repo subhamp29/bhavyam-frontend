@@ -167,7 +167,9 @@ export default function ChatPanel({
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text || isStreaming || !selectedModelId) return;
+    const hasFile = !!selectedFileText;
+    if (((!text && !hasFile) || isStreaming || !selectedModelId)) return;
+    const messageText = text || "Please analyze this file.";
     setInput("");
     setError(null);
     setTokenCount(null);
@@ -183,7 +185,7 @@ export default function ChatPanel({
 
     setMessages((prev) => [
       ...prev,
-      { role: "user", content: text },
+      { role: "user", content: messageText },
       { role: "assistant", content: "", streaming: true },
     ]);
 
@@ -194,7 +196,7 @@ export default function ChatPanel({
     // Persist user message to Supabase if available
     if (onSaveMessage && convId) {
       try {
-        await onSaveMessage(convId, "user", text, selectedModelId, "remote");
+        await onSaveMessage(convId, "user", messageText, selectedModelId, "remote");
       } catch (err) {
         console.error("Failed to save user message:", err);
       }
@@ -204,7 +206,7 @@ export default function ChatPanel({
     try {
       for await (const ev of streamChat({
         conversation_id: convId,
-        message: text,
+        message: messageText,
         model_id: selectedModelId,
         file_text: selectedFileText,
         file_name: selectedFile?.name ?? null,
@@ -246,7 +248,7 @@ export default function ChatPanel({
           // Auto-title new conversations from first user message
           if (onUpdateTitle && messages.length === 0 && convId) {
             try {
-              const title = text.slice(0, 40) + (text.length > 40 ? "..." : "");
+              const title = messageText.slice(0, 40) + (messageText.length > 40 ? "..." : "");
               await onUpdateTitle(convId, title);
               await onRefreshConversations();
             } catch {

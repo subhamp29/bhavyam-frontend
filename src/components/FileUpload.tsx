@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 type FileUploadProps = {
   onFileSelected: (file: File) => void;
@@ -12,6 +12,8 @@ export default function FileUpload({
   disabled = false,
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -20,10 +22,24 @@ export default function FileUpload({
 
     if (!file) return;
 
-    onFileSelected(file);
+    setPendingFile(file);
+    setShowWarning(true);
 
-    // Allows selecting the same file again later.
     event.target.value = "";
+  };
+
+  const handleConfirm = () => {
+    if (!pendingFile) return;
+
+    onFileSelected(pendingFile);
+
+    setPendingFile(null);
+    setShowWarning(false);
+  };
+
+  const handleCancel = () => {
+    setPendingFile(null);
+    setShowWarning(false);
   };
 
   return (
@@ -58,6 +74,58 @@ export default function FileUpload({
           <path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.82-2.83l8.49-8.48" />
         </svg>
       </button>
+
+      {showWarning && pendingFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl border bg-background p-6 shadow-xl">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="text-xl">
+                ⚠️
+              </div>
+
+              <div>
+                <h2 className="text-lg font-semibold">
+                  Temporary file analysis
+                </h2>
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                  This file will be used only for this analysis.
+                  It will not be saved to your account or
+                  conversation history.
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-5 rounded-lg bg-muted p-3">
+              <p className="truncate text-sm font-medium">
+                {pendingFile.name}
+              </p>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                {pendingFile.type || "Unknown file type"}
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-lg border px-4 py-2 text-sm hover:bg-muted"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirm}
+                className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:opacity-90"
+              >
+                Analyze once
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
