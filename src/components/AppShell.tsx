@@ -13,7 +13,7 @@ import MobileSheet from "./MobileSheet";
 import LoginPage from "@/app/login/page";
 import { StreamingProvider, useStreaming } from "@/context/StreamingContext";
 import { KeyboardProvider, useKeyboard } from "@/context/KeyboardContext";
-import { ActiveChatProvider } from "@/context/ActiveChatProvider";
+import { ActiveChatProvider } from "@/context/ActiveChatContext";
 import AuthGuard from "./AuthGuard";
 import { logoutUser } from "@/lib/supabaseData";
 
