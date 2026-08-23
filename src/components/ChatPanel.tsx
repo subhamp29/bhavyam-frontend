@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Paperclip, Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe } from "lucide-react";
+import { Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import MessageBubble, { type ChatMessage } from "./MessageBubble";
 import ThinkingIndicator from "./ThinkingIndicator";
+import FileUpload from "./FileUpload";
 import { useKeyboard } from "@/context/KeyboardContext";
 import { useActiveChat } from "@/context/ActiveChatContext";
 import type { ConversationDetail } from "@/hooks/useConversations";
@@ -48,6 +49,7 @@ export default function ChatPanel({
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [tokenCount, setTokenCount] = useState<number | null>(null);
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const modelSelectorRef = useRef<HTMLDivElement>(null);
@@ -300,6 +302,16 @@ export default function ChatPanel({
     inputRef.current?.focus();
   };
 
+  const handleFileSelected = (file: File) => {
+    setSelectedFile(file);
+
+    console.log("Selected file:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+  };
+
   const selectedModel = models.find((m) => m.id === selectedModelId);
 
   return (
@@ -473,13 +485,10 @@ export default function ChatPanel({
       {/* Input Area */}
       <div className="input-wrapper shrink-0">
         <div className="relative flex items-center gap-3">
-          <button
-            title="Attach file (coming soon)"
-            disabled
-            className="text-slate-500 p-2 rounded-lg cursor-not-allowed opacity-50"
-          >
-            <Paperclip size={20} />
-          </button>
+          <FileUpload
+            onFileSelected={handleFileSelected}
+            disabled={isStreaming}
+          />
           <input
             ref={inputRef}
             type="text"
@@ -510,6 +519,11 @@ export default function ChatPanel({
             <Send size={18} />
           </button>
         </div>
+        {selectedFile && (
+          <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-muted">
+            📎 {selectedFile.name}
+          </p>
+        )}
         {tokenCount !== null && (
           <p className="mx-auto mt-2 max-w-3xl text-center text-[11px] text-muted">
             {tokenCount} tokens
