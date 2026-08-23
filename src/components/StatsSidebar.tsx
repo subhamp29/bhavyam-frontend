@@ -1,9 +1,27 @@
 "use client";
 
-import { Cpu } from "lucide-react";
+import { Cpu, LogOut } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import StatsPanel from "./StatsPanel";
+import { logoutUser } from "@/lib/supabaseData";
 
 export default function StatsSidebar() {
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      await logoutUser();
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setLoggingOut(false);
+    }
+  };
+
   return (
     <aside className="hidden lg:flex w-[290px] flex-col h-full overflow-hidden z-10">
       {/* Profile Header */}
@@ -27,6 +45,19 @@ export default function StatsSidebar() {
       {/* Nav + Stat Cards */}
       <div className="glass-panel flex-1 flex flex-col min-h-0 overflow-hidden mt-5">
         <StatsPanel />
+      </div>
+
+      {/* Logout */}
+      <div className="p-4 shrink-0">
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
+        >
+          <LogOut size={16} />
+          {loggingOut ? "Logging out..." : "Logout"}
+        </button>
       </div>
     </aside>
   );

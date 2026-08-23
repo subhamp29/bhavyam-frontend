@@ -24,7 +24,7 @@ type ChatPanelProps = {
   onRefreshConversations: () => Promise<void>;
   isStreaming: boolean;
   onStreamingChange: (v: boolean) => void;
-  onSaveMessage: (conversationId: string, role: "user" | "assistant" | "system", content: string, model: string, backend: string) => Promise<void>;
+  onSaveMessage: (conversationId: string, role: "user" | "assistant" | "system", content: string, model: string, backend: string, responseMs?: number, tokenCount?: number) => Promise<void>;
   onUpdateTitle: (conversationId: string, title: string) => Promise<void>;
   onLoadConversation: (id: string) => Promise<ConversationDetail | null>;
 };
@@ -184,6 +184,10 @@ export default function ChatPanel({
       { role: "assistant", content: "", streaming: true },
     ]);
 
+    const sendTime = Date.now();
+    let responseMs: number | undefined;
+    let tokenCount: number | undefined;
+
     // Persist user message to Supabase if available
     if (onSaveMessage && convId) {
       try {
@@ -213,15 +217,22 @@ export default function ChatPanel({
           });
         }
         if (ev.done) {
+          responseMs = ev.response_ms ?? Math.round(Date.now() - sendTime);
+          tokenCount = ev.token_count ?? undefined;
           setActiveConversationId(convId);
           router.replace(`/?id=${convId}`, { scroll: false });
           onSelectConversation(convId);
           await onRefreshConversations();
 
+          // Refresh stats in sidebar after message is saved
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("stats:refresh"));
+          }
+
           // Persist assistant message to Supabase if available
           if (onSaveMessage && convId) {
             try {
-                  await onSaveMessage(convId, "assistant", acc, selectedModelId, "remote");
+              await onSaveMessage(convId, "assistant", acc, selectedModelId, "remote", responseMs, tokenCount);
             } catch (err) {
               console.error("Failed to save assistant message:", err);
             }

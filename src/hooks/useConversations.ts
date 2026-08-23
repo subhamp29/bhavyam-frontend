@@ -79,9 +79,11 @@ export function useConversations() {
     content: string,
     model: string,
     backend: string,
+    responseMs?: number,
+    tokenCount?: number,
   ) => {
     if (!user) throw new Error("Not authenticated: cannot save message");
-    await saveSupabaseMessage(user.id, conversationId, role, content, model, backend);
+    await saveSupabaseMessage(user.id, conversationId, role, content, model, backend, responseMs, tokenCount);
   }, [user]);
 
   const updateTitle = useCallback(async (conversationId: string, title: string) => {

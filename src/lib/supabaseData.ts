@@ -98,6 +98,8 @@ export async function saveSupabaseMessage(
   content: string,
   model: string,
   backend: string,
+  responseMs?: number,
+  tokenCount?: number,
 ): Promise<void> {
   const { error } = await supabase.from("messages").insert({
     conversation_id: conversationId,
@@ -106,6 +108,8 @@ export async function saveSupabaseMessage(
     content,
     model,
     backend,
+    response_ms: responseMs ?? null,
+    token_count: tokenCount ?? null,
   } as any);
 
   if (error) {
@@ -125,5 +129,10 @@ export async function updateSupabaseConversationTitle(
     .eq("id", conversationId)
     .eq("user_id", userId);
 
+  if (error) throw error;
+}
+
+export async function logoutUser(): Promise<void> {
+  const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }

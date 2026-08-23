@@ -42,6 +42,8 @@ export interface ChatEvent {
   error?: string;
   conversation_id?: string;
   model_id?: string;
+  response_ms?: number;
+  token_count?: number;
 }
 
 export interface StatsResponse {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, Cpu, Database, Zap, LayoutDashboard, Sliders, History as HistoryIcon } from "lucide-react";
@@ -27,6 +27,22 @@ export default function StatsPanel() {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const data = await getStats();
+      setStats({
+        total_messages: data.total_messages,
+        avg_response_time_ms: data.avg_response_time_ms,
+        db_size_mb: data.db_size_mb,
+        messages_per_day: data.messages_per_day || [],
+      });
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
     setIsMobile(mq.matches);
@@ -36,22 +52,16 @@ export default function StatsPanel() {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await getStats();
-        setStats({
-          total_messages: data.total_messages,
-          avg_response_time_ms: data.avg_response_time_ms,
-          db_size_mb: data.db_size_mb,
-          messages_per_day: data.messages_per_day || [],
-        });
-      } catch {
-        // leave stats null so cards show fallback state
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  useEffect(() => {
+    const handler = () => fetchStats();
+    window.addEventListener("stats:refresh", handler);
+    return () => window.removeEventListener("stats:refresh", handler);
+  }, [fetchStats]);
 
   const avgMs = stats?.avg_response_time_ms?.overall;
   const latencyText = stats?.avg_response_time_ms?.tracked
