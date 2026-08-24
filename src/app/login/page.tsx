@@ -32,6 +32,9 @@ export default function LoginPage() {
     if (result.error) {
       setError(result.error.message);
       setSubmitting(false);
+    } else if (isSignUp && !result.session) {
+      setError("Account created. Please check your email to confirm before signing in.");
+      setSubmitting(false);
     }
   };
 
