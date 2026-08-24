@@ -295,7 +295,24 @@ export default function ChatPanel({
       setSelectedFile(null);
       setSelectedFileText(null);
     }
-  }, [input, isStreaming, selectedModelId, activeConversationId, onStreamingChange, onSelectConversation, onRefreshConversations, onSaveMessage, onUpdateTitle, messages.length, onLoadConversation, onNewChat, setActiveConversationId, router]);
+  }, [
+  input,
+  isStreaming,
+  selectedModelId,
+  activeConversationId,
+  selectedFile,
+  selectedFileText,
+  onStreamingChange,
+  onSelectConversation,
+  onRefreshConversations,
+  onSaveMessage,
+  onUpdateTitle,
+  messages.length,
+  onLoadConversation,
+  onNewChat,
+  setActiveConversationId,
+  router,
+]);
 
   const onInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
