@@ -317,7 +317,7 @@ export default function ChatPanel({
       const result = reader.result;
       if (typeof result === "string") {
         setSelectedFileText(result);
-      } else {
+      } else if (result instanceof ArrayBuffer) {
         // Binary file (PDF, image, etc.) — convert to base64 for backend processing
         const base64 = btoa(
           new Uint8Array(result).reduce(
