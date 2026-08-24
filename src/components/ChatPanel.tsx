@@ -167,7 +167,7 @@ export default function ChatPanel({
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
-    const hasFile = !!selectedFileText;
+    const hasFile = !!selectedFile;
     if (((!text && !hasFile) || isStreaming || !selectedModelId)) return;
     const messageText = text || "Please analyze this file.";
     setInput("");
@@ -209,16 +209,17 @@ export default function ChatPanel({
         fileName: selectedFile?.name,
         fileType: selectedFile?.type,
         fileSize: selectedFile?.size,
-        hasFileText: !!selectedFileText,
-        fileTextLength: selectedFileText?.length ?? 0,
+        hasFile: !!selectedFile,
       });
 
       for await (const ev of streamChat({
         conversation_id: convId,
         message: messageText,
         model_id: selectedModelId,
-        file_text: selectedFileText,
-        file_name: selectedFile?.name ?? null,
+        temperature: 0.7,
+        top_p: 0.95,
+        max_tokens: 512,
+        file: selectedFile,
       })) {
         if (ev.delta) {
           acc += ev.delta;
@@ -616,10 +617,10 @@ export default function ChatPanel({
           />
           <button
             onClick={handleSend}
-            disabled={isStreaming || (!input.trim() && !selectedFileText)}
+            disabled={isStreaming || (!input.trim() && !selectedFile)}
             className={cn(
               "p-3 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shrink-0",
-              isStreaming || (!input.trim() && !selectedFileText)
+              isStreaming || (!input.trim() && !selectedFile)
                 ? "cursor-not-allowed bg-panel-2 text-muted"
                 : "bg-gradient-to-r from-accent-blue to-accent-purple text-white shadow-accent-blue/30 hover:from-accent-blue hover:to-accent-purple",
             )}

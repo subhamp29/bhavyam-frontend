@@ -44,8 +44,6 @@ export interface ChatEvent {
   model_id?: string;
   response_ms?: number;
   token_count?: number;
-  file_text?: string | null;
-  file_name?: string | null;
 }
 
 export interface StatsResponse {
@@ -128,27 +126,42 @@ export async function* streamChat(payload: {
   conversation_id: string;
   message: string;
   model_id: string;
-  file_text?: string | null;
-  file_name?: string | null;
+  temperature?: number;
+  top_p?: number;
+  max_tokens?: number;
+  file?: File | null;
 }): AsyncGenerator<ChatEvent> {
   const authHeaders = await getAuthHeaders();
+
+  const formData = new FormData();
+
+  formData.append("conversation_id", payload.conversation_id);
+  formData.append("message", payload.message);
+  formData.append("model_id", payload.model_id);
+  formData.append(
+    "temperature",
+    String(payload.temperature ?? 0.7)
+  );
+  formData.append(
+    "top_p",
+    String(payload.top_p ?? 0.95)
+  );
+  formData.append(
+    "max_tokens",
+    String(payload.max_tokens ?? 512)
+  );
+
+  if (payload.file) {
+    formData.append("file", payload.file);
+  }
+
   const res = await fetch(`${API_BASE}/api/chat`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "Accept": "text/event-stream",
       ...authHeaders,
+      Accept: "text/event-stream",
     },
-    body: JSON.stringify({
-      conversation_id: payload.conversation_id,
-      message: payload.message,
-      model_id: payload.model_id,
-      temperature: 0.7,
-      top_p: 0.95,
-      max_tokens: 512,
-      file_text: payload.file_text ?? null,
-      file_name: payload.file_name ?? null,
-    }),
+    body: formData,
   });
 
   if (!res.ok) {
@@ -161,7 +174,9 @@ export async function* streamChat(payload: {
     });
 
     throw new Error(
-      `Chat request failed (${res.status}): ${body || res.statusText}`
+      `Chat request failed (${res.status}): ${
+        body || res.statusText
+      }`
     );
   }
 
@@ -171,6 +186,7 @@ export async function* streamChat(payload: {
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
+
   let buffer = "";
 
   while (true) {
