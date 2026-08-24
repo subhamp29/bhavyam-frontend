@@ -538,10 +538,10 @@ export default function ChatPanel({
           />
           <button
             onClick={handleSend}
-            disabled={isStreaming || !input.trim()}
+            disabled={isStreaming || (!input.trim() && !selectedFileText)}
             className={cn(
               "p-3 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shrink-0",
-              isStreaming || !input.trim()
+              isStreaming || (!input.trim() && !selectedFileText)
                 ? "cursor-not-allowed bg-panel-2 text-muted"
                 : "bg-gradient-to-r from-accent-blue to-accent-purple text-white shadow-accent-blue/30 hover:from-accent-blue hover:to-accent-purple",
             )}
