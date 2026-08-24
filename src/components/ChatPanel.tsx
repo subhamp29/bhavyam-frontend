@@ -204,6 +204,15 @@ export default function ChatPanel({
 
     let acc = "";
     try {
+      console.log("🚀 Sending chat request:", {
+        message: messageText,
+        fileName: selectedFile?.name,
+        fileType: selectedFile?.type,
+        fileSize: selectedFile?.size,
+        hasFileText: !!selectedFileText,
+        fileTextLength: selectedFileText?.length ?? 0,
+      });
+
       for await (const ev of streamChat({
         conversation_id: convId,
         message: messageText,
@@ -326,38 +335,90 @@ export default function ChatPanel({
     inputRef.current?.focus();
   };
 
-  const handleFileSelected = (file: File) => {
-    setSelectedFile(file);
+  const handleFileSelected = useCallback(async (file: File) => {
+    try {
+      setError(null);
+      setSelectedFile(file);
+      setSelectedFileText(null);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        setSelectedFileText(result);
-      } else if (result instanceof ArrayBuffer) {
-        // Binary file (PDF, image, etc.) — convert to base64 for backend processing
-        const base64 = btoa(
-          new Uint8Array(result).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ""
-          )
-        );
-        setSelectedFileText(base64);
+      console.log("📎 File selected:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+
+      // Images can be sent as base64 for vision-capable models.
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const result = reader.result;
+
+          if (typeof result !== "string") {
+            setError("Unable to read the image.");
+            setSelectedFile(null);
+            return;
+          }
+
+          console.log("📷 Image loaded:", {
+            length: result.length,
+            prefix: result.slice(0, 30),
+          });
+
+          setSelectedFileText(result);
+        };
+
+        reader.onerror = () => {
+          console.error("❌ Failed to read image:", reader.error);
+          setError("Failed to read the image.");
+          setSelectedFile(null);
+        };
+
+        reader.readAsDataURL(file);
+        return;
       }
-    };
 
-    if (file.type.startsWith("text/") || file.name.endsWith(".txt") || file.name.endsWith(".md")) {
-      reader.readAsText(file);
-    } else {
-      reader.readAsArrayBuffer(file);
+      // Text files can be read directly in the browser.
+      if (
+        file.type === "text/plain" ||
+        file.name.toLowerCase().endsWith(".txt")
+      ) {
+        const text = await file.text();
+
+        console.log("📄 Text file loaded:", {
+          length: text.length,
+        });
+
+        setSelectedFileText(text);
+        return;
+      }
+
+      // PDF/DOC/DOCX must be extracted by the backend.
+      // Do NOT convert these files to base64 here.
+      //
+      // We store a marker so the UI knows a file exists.
+      // The actual file will be uploaded separately in Phase 2.
+      if (
+        file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf") ||
+        file.name.toLowerCase().endsWith(".doc") ||
+        file.name.toLowerCase().endsWith(".docx")
+      ) {
+        console.log("📑 Document selected:", file.name);
+
+        setSelectedFileText("__UPLOAD_TO_BACKEND__");
+        return;
+      }
+
+      setError("Unsupported file type.");
+      setSelectedFile(null);
+    } catch (err) {
+      console.error("❌ File processing error:", err);
+      setError("Failed to process the selected file.");
+      setSelectedFile(null);
+      setSelectedFileText(null);
     }
-
-    console.log("Selected file:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
-  };
+  }, []);
 
   const selectedModel = models.find((m) => m.id === selectedModelId);
 
