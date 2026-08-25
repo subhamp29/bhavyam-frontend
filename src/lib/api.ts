@@ -152,7 +152,7 @@ export async function* streamChat(payload: {
   );
 
   if (payload.file) {
-    formData.append("file", payload.file);
+    formData.append("file", payload.file, payload.file.name);
   }
 
   const res = await fetch(`${API_BASE}/api/chat`, {

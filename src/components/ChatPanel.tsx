@@ -169,7 +169,7 @@ export default function ChatPanel({
     const text = input.trim();
     const hasFile = !!selectedFile;
     if (((!text && !hasFile) || isStreaming || !selectedModelId)) return;
-    const messageText = text || "Please analyze this file.";
+    const messageText = text || (selectedFile?.type.startsWith("image/") ? "Please analyze this image." : "Please analyze this file.");
     setInput("");
     setError(null);
     setTokenCount(null);
@@ -348,34 +348,9 @@ export default function ChatPanel({
         size: file.size,
       });
 
-      // Images can be sent as base64 for vision-capable models.
+      // Images are sent as a File via FormData for backend vision processing.
       if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-
-        reader.onload = () => {
-          const result = reader.result;
-
-          if (typeof result !== "string") {
-            setError("Unable to read the image.");
-            setSelectedFile(null);
-            return;
-          }
-
-          console.log("📷 Image loaded:", {
-            length: result.length,
-            prefix: result.slice(0, 30),
-          });
-
-          setSelectedFileText(result);
-        };
-
-        reader.onerror = () => {
-          console.error("❌ Failed to read image:", reader.error);
-          setError("Failed to read the image.");
-          setSelectedFile(null);
-        };
-
-        reader.readAsDataURL(file);
+        setSelectedFile(file);
         return;
       }
 
