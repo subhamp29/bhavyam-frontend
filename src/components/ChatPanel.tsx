@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Send, Trash2, Download, Volume2, VolumeX, ChevronDown, Cpu, Globe } from "lucide-react";
+import { Send, Trash2, Download, ChevronDown, Cpu, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
@@ -46,7 +46,6 @@ export default function ChatPanel({
   const [selectedModelId, setSelectedModelId] = useState<string>("");
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [tokenCount, setTokenCount] = useState<number | null>(null);
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -409,7 +408,7 @@ export default function ChatPanel({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-base lg:text-lg text-white tracking-tight">
-                Neural Link Active
+                Bhavyam AI
               </h3>
               {/* Model selector dropdown */}
               <div className="relative" ref={modelSelectorRef}>
@@ -463,21 +462,10 @@ export default function ChatPanel({
                 )}
               </div>
             </div>
-            {/* Subtitle: desktop-only, decorative flavor text */}
-            <p className="hidden lg:block text-sm text-slate-400 mt-0.5">
-              High-throughput quantum vector matrix operational
-            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSoundEnabled((s) => !s)}
-            title="Toggle sound"
-            className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-all"
-          >
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
           <button
             onClick={() => {
               const transcript = messages

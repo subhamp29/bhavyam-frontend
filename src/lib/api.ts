@@ -228,5 +228,13 @@ export interface TrendingResponse {
   topics: { label: string; traffic?: string | null }[];
 }
 
-export const getTrending = (limit = 6) =>
-  jsonFetch<TrendingResponse>(`${API_BASE}/api/trending?limit=${limit}`);
+export const getTrending = async (limit = 6) => {
+  const res = await fetch(`${API_BASE}/api/trending?limit=${limit}`);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(
+      `Trends request failed (${res.status}): ${body || res.statusText}`
+    );
+  }
+  return res.json() as Promise<TrendingResponse>;
+};

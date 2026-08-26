@@ -13,7 +13,10 @@ export default function TrendingPanel() {
   useEffect(() => {
     getTrending()
       .then((data) => setTopics(data.topics))
-      .catch(() => setTopics([]))
+      .catch((err) => {
+        console.error("Failed to load trends:", err);
+        setTopics([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 

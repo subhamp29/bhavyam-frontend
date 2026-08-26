@@ -35,7 +35,7 @@ export default function ThinkingIndicator({ visible }: ThinkingIndicatorProps) {
           style={{ animation: "spin 2s linear infinite" }}
         />
       </div>
-      <span className="tracking-wider">COMPUTING TENSOR VECTOR MATRIX...</span>
+      <span className="tracking-wider">thinking</span>
     </div>
   );
 }
