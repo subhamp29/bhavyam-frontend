@@ -20,6 +20,16 @@
 # production
 /build
 
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+.tauri/
+
+# Capacitor / Android
+android/
+*.apk
+*.aab
+
 # misc
 .DS_Store
 *.pem
@@ -31,7 +41,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env*.local
+.env.production
 
 # vercel
 .vercel

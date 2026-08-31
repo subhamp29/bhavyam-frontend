@@ -1,0 +1,6 @@
+{
+  "name": "bhavyam-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Bhavyam AI Desktop (Tauri)"
+}
