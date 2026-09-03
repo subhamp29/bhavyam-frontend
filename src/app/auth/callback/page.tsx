@@ -11,8 +11,13 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     (async () => {
-      await supabase.auth.getSession();
-      router.push("/");
+      try {
+        await supabase.auth.getSession();
+      } catch (error) {
+        console.error("Auth callback session error:", error);
+      } finally {
+        router.push("/");
+      }
     })();
   }, [router]);
 

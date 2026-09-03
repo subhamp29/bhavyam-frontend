@@ -24,9 +24,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session ?? null);
-      setLoading(false);
+      try {
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session ?? null);
+      } catch (error) {
+        console.error("Failed to get session:", error);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
     })();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
