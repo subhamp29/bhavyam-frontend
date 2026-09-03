@@ -4,18 +4,24 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-const PUBLIC_ROUTES = ["/login"];
+function isPublicRoute(path: string | null) {
+  if (!path) return false;
+  const cleanPath = path.replace(/\/$/, "") || "/";
+  return cleanPath === "/login" || cleanPath === "/auth/callback";
+}
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
+  const isPublic = isPublicRoute(pathname);
+
   useEffect(() => {
-    if (!loading && !user && !PUBLIC_ROUTES.includes(pathname)) {
+    if (!loading && !user && !isPublic) {
       router.push("/login");
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, isPublic, router]);
 
   if (loading) {
     return (
@@ -25,9 +31,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user && !PUBLIC_ROUTES.includes(pathname)) {
+  if (!user && !isPublic) {
     return null; // redirecting
   }
 
   return <>{children}</>;
 }
+

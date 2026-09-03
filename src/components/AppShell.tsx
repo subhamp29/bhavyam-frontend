@@ -44,8 +44,15 @@ function ShellInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) {
+  const cleanPath = pathname ? (pathname.replace(/\/$/, "") || "/") : "";
+  const isAuthPage = cleanPath === "/login" || cleanPath === "/auth/callback";
+
+  if (!user && !isAuthPage) {
     return <LoginPage />;
+  }
+
+  if (isAuthPage) {
+    return <>{children}</>;
   }
 
   return (
