@@ -23,25 +23,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let mounted = true;
+
     (async () => {
       try {
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            console.warn("AuthContext getSession timed out after 3s");
+            setSession(null);
+            setLoading(false);
+          }
+        }, 3000);
+
         const { data } = await supabase.auth.getSession();
-        setSession(data.session ?? null);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (mounted) {
+          setSession(data.session ?? null);
+          setLoading(false);
+        }
       } catch (error) {
-        console.error("Failed to get session:", error);
-        setSession(null);
-      } finally {
-        setLoading(false);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (mounted) {
+          console.error("Failed to get session:", error);
+          setSession(null);
+          setLoading(false);
+        }
       }
     })();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
+        if (mounted) setSession(session);
       }
     );
 
     return () => {
+      mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
       listener.subscription.unsubscribe();
     };
   }, []);

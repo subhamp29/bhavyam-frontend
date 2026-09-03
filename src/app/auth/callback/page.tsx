@@ -10,12 +10,19 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     (async () => {
       try {
+        timeoutId = setTimeout(() => {
+          console.warn("Auth callback getSession timed out after 3s");
+        }, 3000);
+
         await supabase.auth.getSession();
       } catch (error) {
         console.error("Auth callback session error:", error);
       } finally {
+        if (timeoutId) clearTimeout(timeoutId);
         router.push("/");
       }
     })();
